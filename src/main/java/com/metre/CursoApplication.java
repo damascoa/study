@@ -5,6 +5,12 @@ import com.metre.domain.Cidade;
 import com.metre.domain.Cliente;
 import com.metre.domain.Endereco;
 import com.metre.domain.Estado;
+import com.metre.domain.EstadoPagamento;
+import com.metre.domain.ItemPedido;
+import com.metre.domain.Pagamento;
+import com.metre.domain.PagamentoComBoleto;
+import com.metre.domain.PagamentoComCartao;
+import com.metre.domain.Pedido;
 import com.metre.domain.Produto;
 import com.metre.domain.enums.TipoCliente;
 import com.metre.repositories.CategoriaRepository;
@@ -12,9 +18,14 @@ import com.metre.repositories.CidadeRespository;
 import com.metre.repositories.ClienteRepository;
 import com.metre.repositories.EnderecoRepository;
 import com.metre.repositories.EstadoRepository;
+import com.metre.repositories.ItemPedidoRepository;
+import com.metre.repositories.PagamentoRepository;
+import com.metre.repositories.PedidoRepository;
 import com.metre.repositories.ProdutoRepository;
 import com.metre.resources.CategoriaResource;
+import com.metre.resources.exceptions.ResourceExceptionHandler;
 import com.metre.services.CategoriaService;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -23,7 +34,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackageClasses = {CategoriaResource.class, CategoriaRepository.class, CategoriaService.class})
+@ComponentScan(basePackageClasses = {CategoriaResource.class, CategoriaRepository.class, CategoriaService.class, ResourceExceptionHandler.class})
 public class CursoApplication implements CommandLineRunner {
 
     @Autowired
@@ -38,6 +49,12 @@ public class CursoApplication implements CommandLineRunner {
     private ClienteRepository clienteRepository;
     @Autowired
     private EnderecoRepository enderecoRepository;
+    @Autowired
+    private PedidoRepository pedidoRepository;
+    @Autowired
+    private PagamentoRepository pagamentoRepository;
+    @Autowired
+    private ItemPedidoRepository itemPedidoRepository;
 
     public static void main(String[] args) {
         SpringApplication.run(CursoApplication.class, args);
@@ -47,6 +64,10 @@ public class CursoApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
         Categoria cat1 = new Categoria(null, "Informática");
         Categoria cat2 = new Categoria(null, "Escritório");
+        Categoria cat3 = new Categoria(null, "Medico");
+        Categoria cat4 = new Categoria(null, "Jose");
+        Categoria cat5 = new Categoria(null, "Buffet");
+        Categoria cat6 = new Categoria(null, "Alegria");
 
         Produto p1 = new Produto(null, "Computador", 2000.00);
         Produto p2 = new Produto(null, "Impressora", 800.00);
@@ -74,12 +95,40 @@ public class CursoApplication implements CommandLineRunner {
 
         cli1.getEnderecos().addAll(Arrays.asList(end1, end2));
 
-        categoriaRepository.saveAll(Arrays.asList(cat1, cat2));
+        categoriaRepository.saveAll(Arrays.asList(cat1, cat2, cat3, cat4, cat5, cat6));
         produtoRepository.saveAll(Arrays.asList(p1, p2, p3));
         estadoRepository.saveAll(Arrays.asList(est1, est2));
         cidadeRepository.saveAll(Arrays.asList(c1, c2, c3));
         clienteRepository.save(cli1);
         enderecoRepository.saveAll(Arrays.asList(end1, end2));
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        Pedido ped1 = new Pedido(null, sdf.parse("30/09/2017 10:32"), cli1, end1);
+        Pedido ped2 = new Pedido(null, sdf.parse("10/10/2017 19:35"), cli1, end2);
+
+        Pagamento pagto1 = new PagamentoComCartao(null, EstadoPagamento.QUITADO, ped1, 6);
+        ped1.setPagamento(pagto1);
+
+        Pagamento pagto2 = new PagamentoComBoleto(null, EstadoPagamento.PENDENTE, ped2, sdf.parse("20/10/2017 00:00"), null);
+        ped2.setPagamento(pagto2);
+
+        cli1.getPedidos().addAll(Arrays.asList(ped1, ped2));
+
+        pedidoRepository.saveAll(Arrays.asList(ped1, ped2));
+        pagamentoRepository.saveAll(Arrays.asList(pagto1, pagto2));
+
+        ItemPedido item1 = new ItemPedido(ped1, p1, 0.00, 1, 2000.00);
+        ItemPedido item2 = new ItemPedido(ped1, p3, 0.00, 2, 80.00);
+        ItemPedido item3 = new ItemPedido(ped2, p2, 100.00, 1, 800.00);
+
+        ped1.getItens().addAll(Arrays.asList(item1, item2));
+        ped2.getItens().addAll(Arrays.asList(item3));
+
+        p1.getItens().addAll(Arrays.asList(item1));
+        p2.getItens().addAll(Arrays.asList(item3));
+        p3.getItens().addAll(Arrays.asList(item2));
+
+        itemPedidoRepository.saveAll(Arrays.asList(item1, item2, item3));
 
     }
 }

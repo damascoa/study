@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -41,7 +42,7 @@ public class Cliente implements Serializable {
     @Enumerated(EnumType.ORDINAL)
     private TipoCliente tipoCliente;
     @JsonManagedReference
-    @OneToMany(mappedBy = "cliente")
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
     private List<Endereco> enderecos = new ArrayList();
     @ElementCollection
     @CollectionTable(name = "telefone")

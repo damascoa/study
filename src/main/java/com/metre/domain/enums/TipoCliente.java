@@ -39,5 +39,16 @@ public enum TipoCliente {
         }
         throw new IllegalArgumentException("CODIGO INVADILO " + codigo);
     }
+    public static TipoCliente toEnum(String descricao) {
+        if (descricao == null) {
+            return null;
+        }
+        for (TipoCliente value : TipoCliente.values()) {
+            if (descricao.equals(value.getDescricao())) {
+                return value;
+            }
+        }
+        throw new IllegalArgumentException("DESCRICAO INVADILO " + descricao);
+    }
 
 }
